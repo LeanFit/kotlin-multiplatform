@@ -1,0 +1,163 @@
+name: Common CI
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: read
+
+jobs:
+  setup-pr:
+    name: Setup Pull Request
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract issue number from branch
+        id: extract
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          echo "Branch name: $BRANCH_NAME"
+
+          # 브랜치명에서 이슈 번호 추출 (예: feat/123 -> 123)
+          if [[ "$BRANCH_NAME" =~ ^[a-zA-Z]+/([0-9]+)$ ]]; then
+            ISSUE_NUMBER="${BASH_REMATCH[1]}"
+            echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
+            echo "has_issue=true" >> $GITHUB_OUTPUT
+            echo "Extracted issue number: $ISSUE_NUMBER"
+          else
+            echo "has_issue=false" >> $GITHUB_OUTPUT
+            echo "No issue number found in branch name"
+          fi
+
+      - name: Get issue details
+        if: steps.extract.outputs.has_issue == 'true'
+        id: issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = ${{ steps.extract.outputs.issue_number }};
+
+            try {
+              const { data: issue } = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber
+              });
+
+              core.setOutput('title', issue.title);
+              core.setOutput('found', 'true');
+              console.log(`Issue title: ${issue.title}`);
+            } catch (error) {
+              core.setOutput('found', 'false');
+              console.log(`Issue #${issueNumber} not found`);
+            }
+
+      - name: Parse labels from issue title
+        if: steps.issue.outputs.found == 'true'
+        id: labels
+        run: |
+          TITLE="${{ steps.issue.outputs.title }}"
+          echo "Parsing title: $TITLE"
+
+          LABELS=""
+
+          # 부서 라벨 추출 [m], [b], [c]
+          if [[ "$TITLE" =~ \[([mbc])\] ]]; then
+            DEPT="${BASH_REMATCH[1]}"
+            case "$DEPT" in
+              m) LABELS="mobile" ;;
+              b) LABELS="backend" ;;
+              c) LABELS="common" ;;
+            esac
+            echo "Department: $DEPT -> $LABELS"
+          fi
+
+          # 이슈타입 라벨 추출 [feat], [fix], [docs], [refactor], [test], [chore] 등
+          if [[ "$TITLE" =~ \[[mbc]\]\[([a-zA-Z]+)\] ]]; then
+            TYPE="${BASH_REMATCH[1]}"
+            TYPE_LOWER=$(echo "$TYPE" | tr '[:upper:]' '[:lower:]')
+            if [ -n "$LABELS" ]; then
+              LABELS="$LABELS,$TYPE_LOWER"
+            else
+              LABELS="$TYPE_LOWER"
+            fi
+            echo "Issue type: $TYPE_LOWER"
+          fi
+
+          echo "labels=$LABELS" >> $GITHUB_OUTPUT
+          echo "Final labels: $LABELS"
+
+      - name: Update PR title, labels, and assignee
+        if: steps.issue.outputs.found == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const issueTitle = `${{ steps.issue.outputs.title }}`;
+            const labelsString = `${{ steps.labels.outputs.labels }}`;
+            const prAuthor = context.payload.pull_request.user.login;
+
+            // PR 제목 업데이트
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              title: issueTitle
+            });
+            console.log(`Updated PR title to: ${issueTitle}`);
+
+            // 라벨 추가
+            if (labelsString) {
+              const labels = labelsString.split(',').filter(l => l.trim());
+              if (labels.length > 0) {
+                try {
+                  await github.rest.issues.addLabels({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: prNumber,
+                    labels: labels
+                  });
+                  console.log(`Added labels: ${labels.join(', ')}`);
+                } catch (error) {
+                  console.log(`Failed to add labels: ${error.message}`);
+                }
+              }
+            }
+
+            // Assignee 할당
+            try {
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                assignees: [prAuthor]
+              });
+              console.log(`Assigned PR to: ${prAuthor}`);
+            } catch (error) {
+              console.log(`Failed to assign: ${error.message}`);
+            }
+
+      - name: Link PR to Issue
+        if: steps.extract.outputs.has_issue == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const issueNumber = ${{ steps.extract.outputs.issue_number }};
+            const currentBody = context.payload.pull_request.body || '';
+
+            // 이슈 링크가 없으면 추가
+            const issueLink = `close #${issueNumber}`;
+            if (!currentBody.toLowerCase().includes(`#${issueNumber}`)) {
+              const newBody = currentBody + `\n\n---\nResolves #${issueNumber}`;
+
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                body: newBody
+              });
+              console.log(`Linked PR to issue #${issueNumber}`);
+            }
