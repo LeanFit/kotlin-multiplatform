@@ -6,6 +6,15 @@ local.properties
 captures
 .cxx
 node_modules/
+
+# Environment files
+.env
+.env.*
+*.env
+
+# Server secrets
+server/.env
+server/src/main/resources/application-local.conf
 # Created by https://www.toptal.com/developers/gitignore/api/kotlin,gradle,android,androidstudio,xcode,swift,macos,jetbrains,cocoapods
 # Edit at https://www.toptal.com/developers/gitignore?templates=kotlin,gradle,android,androidstudio,xcode,swift,macos,jetbrains,cocoapods
 
