@@ -46,11 +46,12 @@ fun GarangbiTheme(
     val colors = provideColors(darkTheme)
     val spacing = provideSpacing()
 
-    val colorScheme = if (darkTheme) {
-        createDarkColorScheme(colors)
-    } else {
-        createLightColorScheme(colors)
-    }
+    val colorScheme =
+        if (darkTheme) {
+            createDarkColorScheme(colors)
+        } else {
+            createLightColorScheme(colors)
+        }
 
     CompositionLocalProvider(
         LocalTypography provides typography,

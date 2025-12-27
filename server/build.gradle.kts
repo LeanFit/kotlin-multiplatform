@@ -8,7 +8,7 @@ group = "com.gongbaek.garangbi"
 version = "1.0.0"
 application {
     mainClass.set("com.gongbaek.garangbi.ApplicationKt")
-    
+
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
