@@ -12,32 +12,32 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-object GarangbiTheme {
-    val typography: GarangbiTypography
+object LeanFitTheme {
+    val typography: LeanFitTypography
         @Composable
         @ReadOnlyComposable
         get() = LocalTypography.current
 
-    val colors: GarangbiColors
+    val colors: LeanFitColors
         @Composable
         @ReadOnlyComposable
-        get() = LocalGarangbiColors.current
+        get() = LocalLeanFitColors.current
 
-    val spacing: GarangbiSpacing
+    val spacing: LeanFitSpacing
         @Composable
         @ReadOnlyComposable
-        get() = LocalGarangbiSpacing.current
+        get() = LocalLeanFitSpacing.current
 }
 
 private val LocalTypography =
-    staticCompositionLocalOf<GarangbiTypography> { error("No Typography provided") }
-private val LocalGarangbiColors =
-    staticCompositionLocalOf<GarangbiColors> { error("No Colors provided") }
-private val LocalGarangbiSpacing =
-    staticCompositionLocalOf<GarangbiSpacing> { error("No Spacing provided") }
+    staticCompositionLocalOf<LeanFitTypography> { error("No Typography provided") }
+private val LocalLeanFitColors =
+    staticCompositionLocalOf<LeanFitColors> { error("No Colors provided") }
+private val LocalLeanFitSpacing =
+    staticCompositionLocalOf<LeanFitSpacing> { error("No Spacing provided") }
 
 @Composable
-fun GarangbiTheme(
+fun LeanFitTheme(
     darkTheme: Boolean = false,
     content: @Composable () -> Unit,
 ) {
@@ -55,8 +55,8 @@ fun GarangbiTheme(
 
     CompositionLocalProvider(
         LocalTypography provides typography,
-        LocalGarangbiColors provides colors,
-        LocalGarangbiSpacing provides spacing,
+        LocalLeanFitColors provides colors,
+        LocalLeanFitSpacing provides spacing,
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
@@ -65,7 +65,7 @@ fun GarangbiTheme(
     }
 }
 
-private fun createLightColorScheme(colors: GarangbiColors) =
+private fun createLightColorScheme(colors: LeanFitColors) =
     lightColorScheme(
         primary = colors.primary,
         onPrimary = colors.onPrimary,
@@ -86,7 +86,7 @@ private fun createLightColorScheme(colors: GarangbiColors) =
         onError = colors.onError,
     )
 
-private fun createDarkColorScheme(colors: GarangbiColors) =
+private fun createDarkColorScheme(colors: LeanFitColors) =
     darkColorScheme(
         primary = colors.primary,
         onPrimary = colors.onPrimary,
@@ -107,7 +107,7 @@ private fun createDarkColorScheme(colors: GarangbiColors) =
         onError = colors.onError,
     )
 
-data class GarangbiColors(
+data class LeanFitColors(
     val primary: Color,
     val primarySoft: Color,
     val primaryStrong: Color,
@@ -144,9 +144,9 @@ data class GarangbiColors(
 )
 
 @Composable
-fun provideColors(isDark: Boolean): GarangbiColors =
+fun provideColors(isDark: Boolean): LeanFitColors =
     if (isDark) {
-        GarangbiColors(
+        LeanFitColors(
             primary = Primary400,
             primarySoft = Primary900,
             primaryStrong = Primary300,
@@ -182,7 +182,7 @@ fun provideColors(isDark: Boolean): GarangbiColors =
             textDisabled = Gray600,
         )
     } else {
-        GarangbiColors(
+        LeanFitColors(
             primary = Primary600,
             primarySoft = Primary50,
             primaryStrong = Primary700,
@@ -219,7 +219,7 @@ fun provideColors(isDark: Boolean): GarangbiColors =
         )
     }
 
-data class GarangbiSpacing(
+data class LeanFitSpacing(
     val none: Dp,
     val extraSmall: Dp,
     val small: Dp,
@@ -231,8 +231,8 @@ data class GarangbiSpacing(
 )
 
 @Composable
-fun provideSpacing(): GarangbiSpacing =
-    GarangbiSpacing(
+fun provideSpacing(): LeanFitSpacing =
+    LeanFitSpacing(
         none = 0.dp,
         extraSmall = 4.dp,
         small = 8.dp,

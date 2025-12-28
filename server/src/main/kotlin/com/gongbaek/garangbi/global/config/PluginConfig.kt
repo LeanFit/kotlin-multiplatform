@@ -76,7 +76,7 @@ private fun Route.healthRoutes() {
         call.respond(
             HttpStatusCode.OK,
             mapOf(
-                "message" to "Welcome to Garangbi API",
+                "message" to "Welcome to LeanFit API",
                 "version" to "1.0.0",
             ),
         )

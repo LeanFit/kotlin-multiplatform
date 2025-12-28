@@ -17,14 +17,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import garangbi.composeapp.generated.resources.Res
-import garangbi.composeapp.generated.resources.compose_multiplatform
+import leanfit.composeapp.generated.resources.Res
+import leanfit.composeapp.generated.resources.compose_multiplatform
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 @Preview
-fun App() {
+fun LeanFitApp() {
     MaterialTheme {
         var showContent by remember { mutableStateOf(false) }
         Column(

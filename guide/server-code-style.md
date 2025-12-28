@@ -1,4 +1,4 @@
-# Garangbi Server Code Style Guide
+# LeanFit Server Code Style Guide
 
 ## 참고 레퍼런스
 
@@ -15,7 +15,7 @@
 
 ```
 server/src/main/kotlin/com/gongbaek/garangbi/
-├── GarangbiApplication.kt              # 애플리케이션 진입점
+├── LeanFitApplication.kt               # 애플리케이션 진입점
 │
 ├── global/                             # 전역 설정
 │   ├── config/                         # 설정 클래스

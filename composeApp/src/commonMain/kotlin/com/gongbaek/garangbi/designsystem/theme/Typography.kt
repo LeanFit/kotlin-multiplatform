@@ -7,14 +7,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import garangbi.composeapp.generated.resources.Res
-import garangbi.composeapp.generated.resources.pretendard_bold
-import garangbi.composeapp.generated.resources.pretendard_medium
-import garangbi.composeapp.generated.resources.pretendard_regular
-import garangbi.composeapp.generated.resources.pretendard_semi_bold
+import leanfit.composeapp.generated.resources.Res
+import leanfit.composeapp.generated.resources.pretendard_bold
+import leanfit.composeapp.generated.resources.pretendard_medium
+import leanfit.composeapp.generated.resources.pretendard_regular
+import leanfit.composeapp.generated.resources.pretendard_semi_bold
 import org.jetbrains.compose.resources.Font
 
-data class GarangbiFontFamilies(
+data class LeanFitFontFamilies(
     val bold: FontFamily,
     val semiBold: FontFamily,
     val medium: FontFamily,
@@ -22,15 +22,15 @@ data class GarangbiFontFamilies(
 )
 
 @Composable
-fun provideFontFamilies(): GarangbiFontFamilies =
-    GarangbiFontFamilies(
+fun provideFontFamilies(): LeanFitFontFamilies =
+    LeanFitFontFamilies(
         bold = FontFamily(Font(Res.font.pretendard_bold, weight = FontWeight.Bold)),
         semiBold = FontFamily(Font(Res.font.pretendard_semi_bold, weight = FontWeight.SemiBold)),
         medium = FontFamily(Font(Res.font.pretendard_medium, weight = FontWeight.Medium)),
         regular = FontFamily(Font(Res.font.pretendard_regular, weight = FontWeight.Normal)),
     )
 
-data class GarangbiTypography(
+data class LeanFitTypography(
     val displayLarge: TextStyle,
     val displayMedium: TextStyle,
     val displaySmall: TextStyle,
@@ -49,7 +49,7 @@ data class GarangbiTypography(
 )
 
 @Composable
-fun provideTypography(density: Density): GarangbiTypography {
+fun provideTypography(density: Density): LeanFitTypography {
     val fonts = provideFontFamilies()
 
     val textStyle = { family: FontFamily, weight: FontWeight, sizeDp: Dp, lineDp: Dp, letterSpacing: Dp ->
@@ -62,7 +62,7 @@ fun provideTypography(density: Density): GarangbiTypography {
         )
     }
 
-    return GarangbiTypography(
+    return LeanFitTypography(
         displayLarge = textStyle(fonts.bold, FontWeight.Bold, 40.dp, 48.dp, (-0.5).dp),
         displayMedium = textStyle(fonts.bold, FontWeight.Bold, 32.dp, 40.dp, (-0.25).dp),
         displaySmall = textStyle(fonts.bold, FontWeight.Bold, 28.dp, 36.dp, 0.dp),
