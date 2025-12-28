@@ -5,6 +5,6 @@ RUN gradle :server:buildFatJar --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY --from=build /app/server/build/libs/garangbi-server.jar app.jar
+COPY --from=build /app/server/build/libs/leanfit-server.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

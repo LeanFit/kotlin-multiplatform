@@ -14,7 +14,7 @@
 ### 도메인 중심 패키지 구조 (Domain-Driven)
 
 ```
-server/src/main/kotlin/com/gongbaek/garangbi/
+server/src/main/kotlin/com/gongbaek/leanfit/
 ├── LeanFitApplication.kt               # 애플리케이션 진입점
 │
 ├── global/                             # 전역 설정
@@ -389,7 +389,7 @@ val updatedUser = user.copy(name = "New Name")
 ### 테스트 파일 위치
 
 ```
-server/src/test/kotlin/com/gongbaek/garangbi/
+server/src/test/kotlin/com/gongbaek/leanfit/
 ├── domain/
 │   ├── user/
 │   │   ├── controller/
@@ -472,8 +472,8 @@ import io.ktor.server.*
 import org.jetbrains.exposed.*
 
 // 4. Project imports
-import com.gongbaek.garangbi.domain.*
-import com.gongbaek.garangbi.global.*
+import com.gongbaek.leanfit.domain.*
+import com.gongbaek.leanfit.global.*
 ```
 
 ---
