@@ -48,14 +48,14 @@ kotlin {
 }
 
 android {
-    namespace = "com.gongbaek.garangbi"
+    namespace = "com.gongbaek.leanfit"
     compileSdk =
         libs.versions.android.compileSdk
             .get()
             .toInt()
 
     defaultConfig {
-        applicationId = "com.gongbaek.garangbi"
+        applicationId = "com.gongbaek.leanfit"
         minSdk =
             libs.versions.android.minSdk
                 .get()
@@ -85,9 +85,9 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
-            buildConfigField("String", "BASE_URL", "\"https://api.garangbi.com\"")
+            buildConfigField("String", "BASE_URL", "\"https://api.leanfit.app\"")
             buildConfigField("Boolean", "IS_DEBUG", "false")
         }
     }

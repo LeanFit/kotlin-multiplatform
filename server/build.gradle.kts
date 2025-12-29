@@ -5,7 +5,7 @@ plugins {
     application
 }
 
-group = "com.gongbaek.garangbi"
+group = "com.gongbaek.leanfit"
 version = "1.0.0"
 
 application {
@@ -17,7 +17,7 @@ application {
 
 ktor {
     fatJar {
-        archiveFileName.set("garangbi-server.jar")
+        archiveFileName.set("leanfit-server.jar")
     }
 }
 

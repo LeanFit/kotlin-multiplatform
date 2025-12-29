@@ -28,7 +28,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.gongbaek.garangbi.shared"
+    namespace = "com.gongbaek.leanfit.shared"
     compileSdk =
         libs.versions.android.compileSdk
             .get()

@@ -1,4 +1,4 @@
-rootProject.name = "Garangbi"
+rootProject.name = "LeanFit"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

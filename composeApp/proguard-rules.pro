@@ -1,7 +1,7 @@
 -keepattributes Signature
 -keepattributes *Annotation*
 
--keep class com.gongbaek.garangbi.** { *; }
+-keep class com.gongbaek.leanfit.** { *; }
 
 -keep class com.google.firebase.** { *; }
 -keep class com.google.android.gms.** { *; }
