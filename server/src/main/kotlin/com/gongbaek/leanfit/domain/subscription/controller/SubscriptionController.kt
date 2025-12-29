@@ -1,6 +1,7 @@
 package com.gongbaek.leanfit.domain.subscription.controller
 
 import com.gongbaek.leanfit.domain.subscription.dto.request.CreateSubscriptionRequest
+import com.gongbaek.leanfit.domain.subscription.dto.request.UpdateStatusRequest
 import com.gongbaek.leanfit.domain.subscription.dto.request.UpdateSubscriptionRequest
 import com.gongbaek.leanfit.domain.subscription.service.SubscriptionService
 import com.gongbaek.leanfit.global.common.response.ApiResponse
@@ -15,6 +16,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
+import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import io.ktor.server.routing.route
@@ -22,35 +24,60 @@ import java.util.UUID
 
 private val subscriptionService = SubscriptionService()
 
+/**
+ * 구독 라우트 (인증 필요)
+ */
 fun Route.subscriptionRoutes() {
-    route("/subscriptions") {
-        authenticate("auth-jwt") {
+    authenticate("auth-jwt") {
+        route("/subscriptions") {
+            // 구독 목록 조회
             get {
                 val userId = call.getUserId()
-                val subscriptions = subscriptionService.getSubscriptions(userId)
-                call.respond(HttpStatusCode.OK, ApiResponse(data = subscriptions))
+                val status = call.request.queryParameters["status"]
+                val response = subscriptionService.getSubscriptions(userId, status)
+                call.respond(HttpStatusCode.OK, response)
             }
 
+            // 구독 상세 조회
+            get("/{id}") {
+                val userId = call.getUserId()
+                val subscriptionId = call.getSubscriptionId()
+                val response = subscriptionService.getSubscription(subscriptionId, userId)
+                call.respond(HttpStatusCode.OK, ApiResponse(data = response))
+            }
+
+            // 구독 추가
             post {
                 val userId = call.getUserId()
                 val request = call.receive<CreateSubscriptionRequest>()
-                val subscription = subscriptionService.createSubscription(userId, request)
-                call.respond(HttpStatusCode.Created, ApiResponse(data = subscription))
+                val response = subscriptionService.createSubscription(userId, request)
+                call.respond(HttpStatusCode.Created, response)
             }
 
+            // 구독 수정
             put("/{id}") {
                 val userId = call.getUserId()
                 val subscriptionId = call.getSubscriptionId()
                 val request = call.receive<UpdateSubscriptionRequest>()
-                val subscription = subscriptionService.updateSubscription(subscriptionId, userId, request)
-                call.respond(HttpStatusCode.OK, ApiResponse(data = subscription))
+                val response = subscriptionService.updateSubscription(subscriptionId, userId, request)
+                call.respond(HttpStatusCode.OK, ApiResponse(data = response))
             }
 
+            // 구독 삭제
             delete("/{id}") {
                 val userId = call.getUserId()
                 val subscriptionId = call.getSubscriptionId()
                 subscriptionService.deleteSubscription(subscriptionId, userId)
-                call.respond(HttpStatusCode.OK, ApiResponse<Unit>(message = "Subscription deleted"))
+                call.respond(HttpStatusCode.NoContent)
+            }
+
+            // 구독 상태 변경
+            patch("/{id}/status") {
+                val userId = call.getUserId()
+                val subscriptionId = call.getSubscriptionId()
+                val request = call.receive<UpdateStatusRequest>()
+                val response = subscriptionService.updateStatus(subscriptionId, userId, request)
+                call.respond(HttpStatusCode.OK, ApiResponse(data = response))
             }
         }
     }

@@ -1,7 +1,11 @@
 package com.gongbaek.leanfit.global.config
 
+import com.gongbaek.leanfit.domain.dashboard.controller.dashboardRoutes
+import com.gongbaek.leanfit.domain.notification.controller.notificationRoutes
 import com.gongbaek.leanfit.domain.subscription.controller.subscriptionRoutes
 import com.gongbaek.leanfit.domain.user.controller.authRoutes
+import com.gongbaek.leanfit.domain.user.controller.userRoutes
+import com.gongbaek.leanfit.global.common.idempotency.IdempotencyPlugin
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -42,7 +46,13 @@ fun Application.configureHTTP() {
         allowMethod(HttpMethod.Patch)
         allowHeader(HttpHeaders.Authorization)
         allowHeader(HttpHeaders.ContentType)
+        allowHeader("Idempotency-Key")
         anyHost()
+    }
+
+    // 멱등성 처리 플러그인
+    install(IdempotencyPlugin) {
+        excludedPaths = setOf("/auth/", "/health", "/dashboard/")
     }
 }
 
@@ -57,7 +67,10 @@ fun Application.configureRouting() {
     routing {
         healthRoutes()
         authRoutes()
+        userRoutes()
         subscriptionRoutes()
+        dashboardRoutes()
+        notificationRoutes()
     }
 }
 

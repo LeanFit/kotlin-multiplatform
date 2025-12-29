@@ -1,6 +1,12 @@
 package com.gongbaek.leanfit.global.config
 
+import com.gongbaek.leanfit.infrastructure.database.table.FcmTokensTable
+import com.gongbaek.leanfit.infrastructure.database.table.IdempotencyKeysTable
+import com.gongbaek.leanfit.infrastructure.database.table.NotificationsTable
+import com.gongbaek.leanfit.infrastructure.database.table.PaymentHistoryTable
+import com.gongbaek.leanfit.infrastructure.database.table.RefreshTokensTable
 import com.gongbaek.leanfit.infrastructure.database.table.SubscriptionsTable
+import com.gongbaek.leanfit.infrastructure.database.table.UserSettingsTable
 import com.gongbaek.leanfit.infrastructure.database.table.UsersTable
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -28,7 +34,13 @@ fun Application.configureDatabase() {
     transaction {
         SchemaUtils.create(
             UsersTable,
+            UserSettingsTable,
+            RefreshTokensTable,
+            FcmTokensTable,
             SubscriptionsTable,
+            PaymentHistoryTable,
+            NotificationsTable,
+            IdempotencyKeysTable,
         )
     }
 
