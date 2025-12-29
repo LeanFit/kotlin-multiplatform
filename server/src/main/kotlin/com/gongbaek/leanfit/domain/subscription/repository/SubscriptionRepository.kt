@@ -1,9 +1,14 @@
 package com.gongbaek.leanfit.domain.subscription.repository
 
+import com.gongbaek.leanfit.domain.subscription.entity.BillingCycle
 import com.gongbaek.leanfit.domain.subscription.entity.Subscription
+import com.gongbaek.leanfit.domain.subscription.entity.SubscriptionCategory
+import com.gongbaek.leanfit.domain.subscription.entity.SubscriptionStatus
+import com.gongbaek.leanfit.global.exception.BusinessException
+import com.gongbaek.leanfit.global.exception.ErrorCode
 import com.gongbaek.leanfit.infrastructure.database.table.SubscriptionsTable
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
@@ -12,14 +17,24 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
+import java.math.BigDecimal
 import java.util.UUID
 
 class SubscriptionRepository {
-    fun findAllByUserId(userId: UUID): List<Subscription> =
+    fun findAllByUserId(
+        userId: UUID,
+        status: SubscriptionStatus? = null,
+    ): List<Subscription> =
         transaction {
             SubscriptionsTable
                 .selectAll()
-                .where { SubscriptionsTable.userId eq userId }
+                .where {
+                    if (status != null) {
+                        (SubscriptionsTable.userId eq userId) and (SubscriptionsTable.status eq status.name)
+                    } else {
+                        SubscriptionsTable.userId eq userId
+                    }
+                }
                 .map { it.toSubscription() }
         }
 
@@ -47,30 +62,32 @@ class SubscriptionRepository {
     fun save(
         userId: UUID,
         serviceName: String,
-        amount: Int,
+        amount: BigDecimal,
         currency: String,
-        billingCycle: String,
+        billingCycle: BillingCycle,
         billingDay: Int,
-        category: String?,
-        iconUrl: String?,
+        category: SubscriptionCategory?,
         memo: String?,
-        startDate: Instant?,
+        startDate: LocalDate?,
+        nextPaymentDate: LocalDate?,
     ): Subscription =
         transaction {
             val now = Clock.System.now()
+            val initialVersion = 0L
             val id =
                 SubscriptionsTable.insert {
                     it[SubscriptionsTable.userId] = userId
                     it[SubscriptionsTable.serviceName] = serviceName
                     it[SubscriptionsTable.amount] = amount
                     it[SubscriptionsTable.currency] = currency
-                    it[SubscriptionsTable.billingCycle] = billingCycle
+                    it[SubscriptionsTable.billingCycle] = billingCycle.name
                     it[SubscriptionsTable.billingDay] = billingDay
-                    it[SubscriptionsTable.category] = category
-                    it[SubscriptionsTable.iconUrl] = iconUrl
+                    it[SubscriptionsTable.category] = category?.name
+                    it[status] = SubscriptionStatus.ACTIVE.name
                     it[SubscriptionsTable.memo] = memo
                     it[SubscriptionsTable.startDate] = startDate
-                    it[isActive] = true
+                    it[SubscriptionsTable.nextPaymentDate] = nextPaymentDate
+                    it[version] = initialVersion
                     it[createdAt] = now
                     it[updatedAt] = now
                 } get SubscriptionsTable.id
@@ -84,45 +101,87 @@ class SubscriptionRepository {
                 billingCycle = billingCycle,
                 billingDay = billingDay,
                 category = category,
-                iconUrl = iconUrl,
+                iconUrl = null,
+                status = SubscriptionStatus.ACTIVE,
                 memo = memo,
-                isActive = true,
                 startDate = startDate,
+                nextPaymentDate = nextPaymentDate,
+                version = initialVersion,
                 createdAt = now,
                 updatedAt = now,
             )
         }
 
+    /**
+     * 구독 업데이트 (낙관적 잠금 적용)
+     * @throws BusinessException CONCURRENT_MODIFICATION 동시성 충돌 시
+     */
     fun update(
         id: UUID,
         userId: UUID,
         serviceName: String,
-        amount: Int,
+        amount: BigDecimal,
         currency: String,
-        billingCycle: String,
+        billingCycle: BillingCycle,
         billingDay: Int,
-        category: String?,
-        iconUrl: String?,
+        category: SubscriptionCategory?,
         memo: String?,
-        startDate: Instant?,
-        isActive: Boolean,
-    ): Int =
+        expectedVersion: Long,
+    ): Subscription =
         transaction {
-            SubscriptionsTable.update({
-                (SubscriptionsTable.id eq id) and (SubscriptionsTable.userId eq userId)
-            }) {
-                it[SubscriptionsTable.serviceName] = serviceName
-                it[SubscriptionsTable.amount] = amount
-                it[SubscriptionsTable.currency] = currency
-                it[SubscriptionsTable.billingCycle] = billingCycle
-                it[SubscriptionsTable.billingDay] = billingDay
-                it[SubscriptionsTable.category] = category
-                it[SubscriptionsTable.iconUrl] = iconUrl
-                it[SubscriptionsTable.memo] = memo
-                it[SubscriptionsTable.startDate] = startDate
-                it[SubscriptionsTable.isActive] = isActive
-                it[updatedAt] = Clock.System.now()
+            val now = Clock.System.now()
+            val updatedCount =
+                SubscriptionsTable.update({
+                    (SubscriptionsTable.id eq id) and
+                        (SubscriptionsTable.userId eq userId) and
+                        (SubscriptionsTable.version eq expectedVersion)
+                }) {
+                    it[SubscriptionsTable.serviceName] = serviceName
+                    it[SubscriptionsTable.amount] = amount
+                    it[SubscriptionsTable.currency] = currency
+                    it[SubscriptionsTable.billingCycle] = billingCycle.name
+                    it[SubscriptionsTable.billingDay] = billingDay
+                    it[SubscriptionsTable.category] = category?.name
+                    it[SubscriptionsTable.memo] = memo
+                    it[version] = expectedVersion + 1
+                    it[updatedAt] = now
+                }
+
+            if (updatedCount == 0) {
+                throw BusinessException(ErrorCode.CONCURRENT_MODIFICATION)
             }
+
+            findById(id) ?: throw BusinessException(ErrorCode.SUBSCRIPTION_NOT_FOUND)
+        }
+
+    /**
+     * 상태 업데이트 (낙관적 잠금 적용)
+     * @throws BusinessException CONCURRENT_MODIFICATION 동시성 충돌 시
+     */
+    fun updateStatus(
+        id: UUID,
+        userId: UUID,
+        status: SubscriptionStatus,
+        expectedVersion: Long,
+    ): Subscription =
+        transaction {
+            val now = Clock.System.now()
+            val updatedCount =
+                SubscriptionsTable.update({
+                    (SubscriptionsTable.id eq id) and
+                        (SubscriptionsTable.userId eq userId) and
+                        (SubscriptionsTable.version eq expectedVersion)
+                }) {
+                    it[SubscriptionsTable.status] = status.name
+                    it[version] = expectedVersion + 1
+                    it[updatedAt] = now
+                }
+
+            if (updatedCount == 0) {
+                throw BusinessException(ErrorCode.CONCURRENT_MODIFICATION)
+            }
+
+            findById(id) ?: throw BusinessException(ErrorCode.SUBSCRIPTION_NOT_FOUND)
         }
 
     fun deleteByIdAndUserId(
@@ -135,6 +194,29 @@ class SubscriptionRepository {
             }
         }
 
+    fun deleteAllByUserId(userId: UUID): Int =
+        transaction {
+            SubscriptionsTable.deleteWhere {
+                SubscriptionsTable.userId eq userId
+            }
+        }
+
+    /**
+     * 사용자의 모든 구독을 새 사용자로 이전 (게스트→소셜 전환 시 사용)
+     */
+    fun transferSubscriptions(
+        fromUserId: UUID,
+        toUserId: UUID,
+    ): Int =
+        transaction {
+            SubscriptionsTable.update({
+                SubscriptionsTable.userId eq fromUserId
+            }) {
+                it[userId] = toUserId
+                it[updatedAt] = Clock.System.now()
+            }
+        }
+
     private fun ResultRow.toSubscription(): Subscription =
         Subscription(
             id = this[SubscriptionsTable.id].value,
@@ -142,13 +224,15 @@ class SubscriptionRepository {
             serviceName = this[SubscriptionsTable.serviceName],
             amount = this[SubscriptionsTable.amount],
             currency = this[SubscriptionsTable.currency],
-            billingCycle = this[SubscriptionsTable.billingCycle],
+            billingCycle = BillingCycle.valueOf(this[SubscriptionsTable.billingCycle]),
             billingDay = this[SubscriptionsTable.billingDay],
-            category = this[SubscriptionsTable.category],
+            category = this[SubscriptionsTable.category]?.let { SubscriptionCategory.valueOf(it) },
             iconUrl = this[SubscriptionsTable.iconUrl],
+            status = SubscriptionStatus.valueOf(this[SubscriptionsTable.status]),
             memo = this[SubscriptionsTable.memo],
-            isActive = this[SubscriptionsTable.isActive],
             startDate = this[SubscriptionsTable.startDate],
+            nextPaymentDate = this[SubscriptionsTable.nextPaymentDate],
+            version = this[SubscriptionsTable.version],
             createdAt = this[SubscriptionsTable.createdAt],
             updatedAt = this[SubscriptionsTable.updatedAt],
         )
