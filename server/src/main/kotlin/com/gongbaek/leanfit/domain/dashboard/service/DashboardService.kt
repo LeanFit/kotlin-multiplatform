@@ -60,7 +60,8 @@ class DashboardService(
         val categoryBreakdown = calculateCategoryBreakdown(activeSubscriptions, totalMonthlyAmount)
 
         // 이전 달 데이터 비교
-        val comparedToLastMonth = calculateMonthComparison(activeSubscriptions, totalMonthlyAmount, targetYear, targetMonth)
+        val comparedToLastMonth =
+            calculateMonthComparison(activeSubscriptions, totalMonthlyAmount, targetYear, targetMonth)
 
         return DashboardSummaryResponse(
             year = targetYear,
@@ -107,8 +108,7 @@ class DashboardService(
                             },
                         totalAmount = subscriptions.sumOf { it.amount.toDouble() },
                     )
-                }
-                .sortedBy { it.day }
+                }.sortedBy { it.day }
 
         return CalendarResponse(
             year = targetYear,
@@ -152,8 +152,7 @@ class DashboardService(
                     count = subs.size,
                     percentage = (categoryAmount / totalAmount * 100).let { "%.1f".format(it).toDouble() },
                 )
-            }
-            .sortedByDescending { it.amount }
+            }.sortedByDescending { it.amount }
     }
 
     /**

@@ -164,13 +164,18 @@ class SubscriptionService(
 
     private fun calculateNextPaymentDate(paymentDay: Int): LocalDate {
         val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
-        val thisMonth = LocalDate(today.year, today.monthNumber, minOf(paymentDay, today.month.length(isLeapYear(today.year))))
+        val thisMonth =
+            LocalDate(today.year, today.monthNumber, minOf(paymentDay, today.month.length(isLeapYear(today.year))))
 
         return if (thisMonth >= today) {
             thisMonth
         } else {
             val nextMonth = today.plus(1, DateTimeUnit.MONTH)
-            LocalDate(nextMonth.year, nextMonth.monthNumber, minOf(paymentDay, nextMonth.month.length(isLeapYear(nextMonth.year))))
+            LocalDate(
+                nextMonth.year,
+                nextMonth.monthNumber,
+                minOf(paymentDay, nextMonth.month.length(isLeapYear(nextMonth.year))),
+            )
         }
     }
 

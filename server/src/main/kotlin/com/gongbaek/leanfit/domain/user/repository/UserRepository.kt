@@ -48,8 +48,7 @@ class UserRepository {
                     (UsersTable.provider eq provider.name) and
                         (UsersTable.providerId eq providerId) and
                         (UsersTable.deletedAt.isNull())
-                }
-                .singleOrNull()
+                }.singleOrNull()
                 ?.toUser()
         }
 

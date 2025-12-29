@@ -7,10 +7,10 @@ import java.util.UUID
  * 알림 타입
  */
 enum class NotificationType {
-    PAYMENT_REMINDER,   // 결제 리마인더
-    PAYMENT_DUE,        // 결제일 당일
+    PAYMENT_REMINDER, // 결제 리마인더
+    PAYMENT_DUE, // 결제일 당일
     SUBSCRIPTION_ADDED, // 구독 추가 완료
-    SYSTEM,             // 시스템 알림
+    SYSTEM, // 시스템 알림
 }
 
 /**

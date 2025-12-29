@@ -85,7 +85,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             buildConfigField("String", "BASE_URL", "\"https://api.leanfit.app\"")
             buildConfigField("Boolean", "IS_DEBUG", "false")

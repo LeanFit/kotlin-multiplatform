@@ -76,8 +76,7 @@ class RefreshTokenRepository {
                     (RefreshTokensTable.userId eq userId) and
                         (RefreshTokensTable.tokenHash eq tokenHash) and
                         (RefreshTokensTable.expiresAt greater now)
-                }
-                .singleOrNull()
+                }.singleOrNull()
                 ?.let {
                     RefreshToken(
                         id = it[RefreshTokensTable.id].value,

@@ -34,8 +34,7 @@ class SubscriptionRepository {
                     } else {
                         SubscriptionsTable.userId eq userId
                     }
-                }
-                .map { it.toSubscription() }
+                }.map { it.toSubscription() }
         }
 
     fun findById(id: UUID): Subscription? =

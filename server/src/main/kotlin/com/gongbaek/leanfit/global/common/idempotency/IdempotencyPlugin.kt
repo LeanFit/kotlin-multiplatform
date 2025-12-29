@@ -117,7 +117,11 @@ class IdempotencyPlugin(
     private fun ApplicationCall.getUserIdOrNull(): UUID? =
         try {
             val principal = principal<JWTPrincipal>()
-            principal?.payload?.getClaim("userId")?.asString()?.let { UUID.fromString(it) }
+            principal
+                ?.payload
+                ?.getClaim("userId")
+                ?.asString()
+                ?.let { UUID.fromString(it) }
         } catch (e: Exception) {
             null
         }

@@ -36,8 +36,7 @@ class IdempotencyRepository {
                     (IdempotencyKeysTable.key eq key) and
                         (IdempotencyKeysTable.userId eq userId) and
                         (IdempotencyKeysTable.expiresAt greater now)
-                }
-                .singleOrNull()
+                }.singleOrNull()
                 ?.toIdempotencyKey()
         }
 

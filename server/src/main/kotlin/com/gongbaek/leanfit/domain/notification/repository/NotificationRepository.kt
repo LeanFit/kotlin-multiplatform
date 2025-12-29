@@ -37,8 +37,7 @@ class NotificationRepository {
                     } else {
                         NotificationsTable.userId eq userId
                     }
-                }
-                .orderBy(NotificationsTable.createdAt, SortOrder.DESC)
+                }.orderBy(NotificationsTable.createdAt, SortOrder.DESC)
                 .limit(limit)
                 .map { it.toNotification() }
         }
@@ -136,8 +135,7 @@ class FcmTokenRepository {
                     .selectAll()
                     .where {
                         (FcmTokensTable.userId eq userId) and (FcmTokensTable.platform eq platform.name)
-                    }
-                    .singleOrNull()
+                    }.singleOrNull()
 
             if (existing != null) {
                 // 업데이트
